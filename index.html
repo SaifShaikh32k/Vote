@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Error: Exception: No HTML file named index was found.This error means that your Google Apps Script code is trying to load an HTML file named "index", but it can't find it within your Apps Script project.Why This HappensIn Google Apps Script, your HTML code needs to be stored as a separate file within the Apps Script project itself, not as a file on your local computer.The SolutionHere's how to fix this:Open Your Apps Script Project: Go to the Google Apps Script editor where you have your Code.gs file.Create the index.html File:In the Apps Script editor, look for the "+" button next to "Files" in the left-hand sidebar.Click the "+" button and select "HTML."Name the file exactly "index".Click "OK."Paste Your HTML Code:Now you have an index.html file in your Apps Script project.Copy the HTML code from your local index.html file and paste it into this new index.html file in the Apps Script editor.  It should look something like this:<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -29,7 +29,7 @@
   </div>
   <script>
     // Replace with your Apps Script Web App URL
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzmhJCKhRq6kXOn-6vJHeBgH9GZlWMT9Uaip2Khsstjl_sYFRrRkn0kC26CsD8FF1fi/exec";
+    const WEB_APP_URL = "YOUR_WEB_APP_URL";
     let studentId = "";
     // Login function
     function login() {
@@ -85,3 +85,4 @@
   </script>
 </body>
 </html>
+Save the Apps Script Project: Save your Apps Script project.After doing this, the error should be resolved, as the index.html file will be in the location where Apps Script expects it to be.
