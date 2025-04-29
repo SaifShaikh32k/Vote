@@ -12,6 +12,7 @@
 <body>
   <h2>Student Voting Portal</h2>
 
+  <!-- Login Form -->
   <div id="loginForm">
     <input type="text" id="studentId" placeholder="Student ID" required>
     <input type="password" id="password" placeholder="Password" required>
@@ -19,6 +20,7 @@
     <p id="loginMessage"></p>
   </div>
 
+  <!-- Voting Form (Initially hidden) -->
   <div id="voteForm">
     <label for="voteOption">Choose your candidate:</label>
     <select id="voteOption">
@@ -31,9 +33,11 @@
   </div>
 
   <script>
+    // Replace with your Apps Script Web App URL
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgr7hqYehaG_zS-xahlo6KHT9IZom2RpQgp4y8V3bnOS27rmHxsjV_22krYe-iJZus/exec";
     let studentId = "", password = "";
 
+    // Login function
     function login() {
       studentId = document.getElementById('studentId').value.trim();
       password = document.getElementById('password').value.trim();
@@ -60,6 +64,7 @@
       });
     }
 
+    // Submit vote function
     function submitVote() {
       const vote = document.getElementById('voteOption').value;
 
