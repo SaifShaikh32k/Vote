@@ -11,15 +11,13 @@
 </head>
 <body>
   <h2>Student Voting Portal</h2>
-
-    <div id="loginForm">
+  <div id="loginForm">
     <input type="text" id="studentId" placeholder="Student ID" required>
     <input type="password" id="password" placeholder="Password" required>
     <button onclick="login()">Login</button>
     <p id="loginMessage"></p>
   </div>
-
-    <div id="voteForm">
+  <div id="voteForm">
     <label for="voteOption">Choose your candidate:</label>
     <select id="voteOption">
       <option value="Candidate A">Candidate A</option>
@@ -29,51 +27,42 @@
     <button onclick="submitVote()">Submit Vote</button>
     <p id="voteMessage"></p>
   </div>
-
   <script>
-    // Replace with your Apps Script Web App URL for submitting the vote
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwgr7hqYehaG_zS-xahlo6KHT9IZom2RpQgp4y8V3bnOS27rmHxsjV_22krYe-iJZus/exec";
-    const validCredentials = {
-      "10101": "pass123",
-      "10102": "abc456",
-      "1288910": "Saif"
-    };
-    let loggedInStudentId = null;
-    const votedStudents = new Set(); // To keep track of students who have voted
-
+    // Replace with your Apps Script Web App URL
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzmhJCKhRq6kXOn-6vJHeBgH9GZlWMT9Uaip2Khsstjl_sYFRrRkn0kC26CsD8FF1fi/exec";
+    let studentId = "";
     // Login function
     function login() {
-      const studentIdInput = document.getElementById('studentId').value.trim();
-      const passwordInput = document.getElementById('password').value;
+      studentId = document.getElementById('studentId').value.trim();
+      const password = document.getElementById('password').value.trim();
       document.getElementById('loginMessage').textContent = "Authenticating...";
-
-      if (votedStudents.has(studentIdInput)) {
-        document.getElementById('loginMessage').textContent = "You have already voted.";
-        return;
+      fetch(WEB_APP_URL, {
+        method: 'POST',
+        body: JSON.stringify({ id: studentId, password: password, vote: null }),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'already_voted') {
+          document.getElementById('loginMessage').textContent = "You have already voted.";
+        } else if (data.status === 'success') {
+          document.getElementById('loginForm').style.display = 'none';
+          document.getElementById('voteForm').style.display = 'block';
+        } else {
+          document.getElementById('loginMessage').textContent = "Invalid credentials.";
+        }
+      })
+      .catch((error) => {
+        console.error("Error during login:", error);
+        document.getElementById('loginMessage').textContent = "Something went wrong. Try again.";
+      });
       }
-
-      if (validCredentials[studentIdInput] === passwordInput) {
-        loggedInStudentId = studentIdInput;
-        document.getElementById('loginForm').style.display = 'none';
-        document.getElementById('voteForm').style.display = 'block';
-        document.getElementById('loginMessage').textContent = "";
-      } else {
-        document.getElementById('loginMessage').textContent = "Invalid credentials.";
-      }
-    }
-
     // Submit vote function
     function submitVote() {
       const vote = document.getElementById('voteOption').value;
-
-      if (!loggedInStudentId) {
-        document.getElementById('voteMessage').textContent = "You need to log in first.";
-        return;
-      }
-
       fetch(WEB_APP_URL, {
         method: 'POST',
-        body: JSON.stringify({ id: loggedInStudentId, vote: vote, password: null }), // Password not needed for voting
+        body: JSON.stringify({ id: studentId, password: null, vote: vote }), //changed here
         headers: { 'Content-Type': 'application/json' }
       })
       .then(res => res.json())
@@ -81,14 +70,15 @@
         if (data.status === 'success') {
           document.getElementById('voteMessage').textContent = "Vote submitted successfully!";
           document.getElementById('voteForm').style.display = 'none';
-          votedStudents.add(loggedInStudentId); // Mark student as voted
-          loggedInStudentId = null; // Clear logged-in status
-          // Optionally, you could redirect or show a thank you message here.
-        } else {
-          document.getElementById('voteMessage').textContent = "Something went wrong while submitting your vote.";
+        } else if (data.status === 'already_voted') {
+            document.getElementById('voteMessage').textContent = "You have already voted.";
+         }
+          else {
+          document.getElementById('voteMessage').textContent = "Something went wrong.";
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Error during vote submission:", error);
         document.getElementById('voteMessage').textContent = "Error submitting vote.";
       });
     }
