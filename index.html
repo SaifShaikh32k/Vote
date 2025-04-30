@@ -3,168 +3,115 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Voting</title>
+  <title>Google Sheets Data</title>
   <style>
-    /* Reset some default styling */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    /* Body Styling */
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
       background-color: #f4f4f9;
       color: #333;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      margin: 0;
       padding: 20px;
     }
-    
-    /* Container Styling */
+    h1 {
+      text-align: center;
+      color: #4a90e2;
+    }
     .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+    }
+    table {
       width: 100%;
-      max-width: 400px;
+      border-collapse: collapse;
     }
-    
-    /* Header Styling */
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #4a90e2;
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
     }
-
-    /* Form Elements Styling */
-    input, select, button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-
-    input:focus, select:focus, button:focus {
-      outline: none;
-      border-color: #4a90e2;
-    }
-
-    button {
+    th {
       background-color: #4a90e2;
       color: white;
-      cursor: pointer;
-      font-weight: bold;
     }
-
-    button:hover {
-      background-color: #357ab7;
+    td {
+      background-color: #f9f9f9;
     }
-
-    /* Hidden Form */
-    #voteForm {
-      display: none;
-    }
-
-    /* Error and Success Messages */
-    p#loginMessage, p#voteMessage {
-      text-align: center;
-      color: #d9534f; /* red color for errors */
-      font-weight: bold;
-    }
-
-    p#voteMessage.success {
-      color: #5bc0de; /* light blue for success */
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-size: 14px;
+      background-color: #f0f0f0;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Student Voting Portal</h2>
-    <div id="loginForm">
-      <input type="text" id="studentId" placeholder="Student ID" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <button onclick="login()">Login</button>
-      <p id="loginMessage"></p>
-    </div>
 
-    <div id="voteForm">
-      <label for="voteOption">Choose your candidate:</label>
-      <select id="voteOption">
-        <option value="Candidate A">Candidate A</option>
-        <option value="Candidate B">Candidate B</option>
-        <option value="Candidate C">Candidate C</option>
-      </select>
-      <button onclick="submitVote()">Submit Vote</button>
-      <p id="voteMessage"></p>
-    </div>
+  <div class="container">
+    <h1>Voting Data</h1>
+    <p>Below is the data fetched from your Google Sheets:</p>
+    <table id="sheetData">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Password</th>
+          <th>Has Voted</th>
+          <th>Vote</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Data will be dynamically inserted here -->
+      </tbody>
+    </table>
+
+    <h2>Raw Sheet Data (JSON)</h2>
+    <pre id="jsonOutput">Loading...</pre>
   </div>
 
   <script>
-    // Replace with your Apps Script Web App URL
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyPPyls48Bn0iYsIyAZ_FecHxBUGCF8CtnGszB2gzFHQPbeY5U3CEgHVo4alqqqYH5PpQ/exec";
-    let studentId = "";
-    
-    // Login function
-    function login() {
-      studentId = document.getElementById('studentId').value.trim();
-      const password = document.getElementById('password').value.trim();
-      document.getElementById('loginMessage').textContent = "Authenticating...";
+    // Replace with your Google Sheets ID and API Key
+    const sheetId = '1Hb3QsD3Ra-vCaqMfyfVvvxwZXf3x-CghMcwLk-GjleI';
+    const apiKey = 'AIzaSyCH6iD1A4Kzqy8H7G5BaVFoaJX0p7okDkE';
+    const range = 'Students!A1:D10';  // Adjust to your range if needed
 
-      fetch(WEB_APP_URL, {
-        method: 'POST',
-        body: JSON.stringify({ id: studentId, password: password, vote: null }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'already_voted') {
-          document.getElementById('loginMessage').textContent = "You have already voted.";
-        } else if (data.status === 'success') {
-          document.getElementById('loginForm').style.display = 'none';
-          document.getElementById('voteForm').style.display = 'block';
-        } else {
-          document.getElementById('loginMessage').textContent = "Invalid credentials.";
-        }
-      })
-      .catch((error) => {
-        console.error("Error during login:", error);
-        document.getElementById('loginMessage').textContent = "Something went wrong. Try again.";
-      });
-    }
+    // Construct the API URL
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
 
-    // Submit vote function
-    function submitVote() {
-      const vote = document.getElementById('voteOption').value;
-      fetch(WEB_APP_URL, {
-        method: 'POST',
-        body: JSON.stringify({ id: studentId, password: null, vote: vote }),
-        headers: { 'Content-Type': 'application/json' }
-      })
-      .then(res => res.json())
+    // Fetch data from Google Sheets API
+    fetch(url)
+      .then(response => response.json())
       .then(data => {
-        const voteMessageElement = document.getElementById('voteMessage');
-        if (data.status === 'success') {
-          voteMessageElement.textContent = "Vote submitted successfully!";
-          voteMessageElement.classList.add('success');
-          document.getElementById('voteForm').style.display = 'none';
-        } else if (data.status === 'already_voted') {
-          voteMessageElement.textContent = "You have already voted.";
-        } else {
-          voteMessageElement.textContent = "Something went wrong.";
-        }
+        console.log(data); // Log the raw data for debugging
+        const rows = data.values;
+        
+        // Display raw data as JSON
+        document.getElementById("jsonOutput").textContent = JSON.stringify(data.values, null, 2);
+
+        // Display data in a table format
+        const tableBody = document.querySelector("#sheetData tbody");
+        rows.forEach((row, index) => {
+          if (index > 0) {  // Skip the header row (if it exists)
+            const tr = document.createElement("tr");
+            row.forEach(cell => {
+              const td = document.createElement("td");
+              td.textContent = cell;
+              tr.appendChild(td);
+            });
+            tableBody.appendChild(tr);
+          }
+        });
       })
-      .catch((error) => {
-        console.error("Error during vote submission:", error);
-        document.getElementById('voteMessage').textContent = "Error submitting vote.";
+      .catch(error => {
+        console.error("Error fetching sheet data:", error);
+        document.getElementById("jsonOutput").textContent = "Error fetching data. Please try again later.";
       });
-    }
   </script>
+
 </body>
 </html>
